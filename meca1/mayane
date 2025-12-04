@@ -1,0 +1,79 @@
+const int trigPin = 4;  // Pino de Trigger do HC-SR04
+const int echoPin = 5;  // Pino de Echo do HC-SR04
+int amarelo = 2;        // Pino do vermelho
+int ldr = A0;
+int vermelho = 7;
+int limite = 1000;
+int bt = 6;
+int botaoStatus = 0;
+
+void setup() {
+  Serial.begin(9600);  // Inicia a comunicação serial
+  // Inicializa os pinos
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  pinMode(amarelo, OUTPUT);
+  pinMode(vermelho, OUTPUT);
+
+  pinMode(bt, INPUT_PULLUP);
+}
+
+void loop() {
+  botaoStatus = digitalRead(bt);
+  Serial.print("Botão: ");
+  Serial.print(botaoStatus);
+  
+  //ultrassonico
+  // Envia um pulso no pino Trigger para iniciar a medição de distância
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  long duration = pulseIn(echoPin, HIGH, 5800);
+
+  long distance = (duration / 2) / 29.1;
+
+  Serial.print("Distância: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  /*if (distance < 20) {            // Se o objeto estiver a menos de 20cm
+    digitalWrite(amarelo, HIGH);  // Acende o vermelho
+  } else {
+    digitalWrite(amarelo, LOW);  // Apaga o vermelho
+  }*/
+  //ldr
+  int valor = analogRead(ldr);
+  Serial.println(valor);
+  if (valor < limite) {
+    digitalWrite(vermelho, LOW);
+  } else {
+    digitalWrite(vermelho, HIGH);
+  }
+
+  //o botão funciona invertido - 1 desligado e 0 ligado
+  //se botão ligado e sensor presença detecta presença liga amarelo
+  if(botaoStatus == 0 && distance < 20) {
+    Serial.println("liga bt ultra");
+    digitalWrite(vermelho, HIGH);
+  } else if(botaoStatus == 1 && distance < 20) { //se botão desligado e distancia detecta pessoa
+      digitalWrite(amarelo, HIGH);
+      delay(200);
+      digitalWrite(amarelo, LOW);
+      delay(200);
+  } else {
+      digitalWrite(amarelo, LOW);
+  } 
+  /*if(botaoStatus == 0) {
+    Serial.println("ligado");
+    digitalWrite(vermelho, HIGH);
+  } else {
+    Serial.println("desligado");
+    digitalWrite(vermelho, LOW);
+  }*/
+
+  delay(500);  // Espera um pouco antes de fazer a próxima leitura
+}
